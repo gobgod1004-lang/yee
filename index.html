@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ANNABELLE</title>
+  <link href="https://fonts.googleapis.com/css2?family=Creepster&family=Special+Elite&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #0a0005;
+      min-height: 100vh;
+      font-family: 'Special Elite', cursive;
+      color: #c9a87a;
+      position: relative;
+      overflow-x: hidden;
+      cursor: crosshair;
+    }
+
+    .bg-noise {
+      position: fixed;
+      inset: 0;
+      background-image:
+        radial-gradient(ellipse at 20% 50%, rgba(80,0,20,0.3) 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 20%, rgba(40,0,10,0.4) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .flicker { animation: flicker 8s infinite; }
+
+    @keyframes flicker {
+      0%,95%,97%,100% { opacity: 1; }
+      96% { opacity: 0.3; }
+      98% { opacity: 0.7; }
+    }
+
+    .content {
+      position: relative;
+      z-index: 2;
+      padding: 2rem;
+      text-align: center;
+    }
+
+    h1 {
+      font-family: 'Creepster', cursive;
+      font-size: 3.5rem;
+      color: #8b0000;
+      text-shadow: 0 0 30px rgba(139,0,0,0.8), 0 0 60px rgba(139,0,0,0.4);
+      letter-spacing: 8px;
+      margin-bottom: 0.5rem;
+      animation: pulse-title 3s ease-in-out infinite;
+    }
+
+    @keyframes pulse-title {
+      0%,100% { text-shadow: 0 0 30px rgba(139,0,0,0.8), 0 0 60px rgba(139,0,0,0.4); }
+      50% { text-shadow: 0 0 50px rgba(200,0,0,1), 0 0 100px rgba(139,0,0,0.8); }
+    }
+
+    .subtitle {
+      font-size: 0.9rem;
+      color: #6b5a3a;
+      letter-spacing: 6px;
+      text-transform: uppercase;
+      margin-bottom: 3rem;
+    }
+
+    .doll-container {
+      position: relative;
+      width: 220px;
+      margin: 0 auto 2rem;
+    }
+
+    .doll-svg {
+      filter: drop-shadow(0 0 20px rgba(139,0,0,0.6));
+      animation: doll-sway 4s ease-in-out infinite;
+    }
+
+    @keyframes doll-sway {
+      0%,100% { transform: rotate(-2deg); }
+      50% { transform: rotate(2deg); }
+    }
+
+    .doll-eyes { animation: blink 6s infinite; }
+
+    @keyframes blink {
+      0%,90%,92%,100% { transform: scaleY(1); }
+      91% { transform: scaleY(0.05); }
+    }
+
+    .blood-text {
+      font-family: 'Creepster', cursive;
+      font-size: 1.3rem;
+      color: #8b0000;
+      margin-bottom: 1.5rem;
+      opacity: 0.9;
+    }
+
+    .diary-entry {
+      background: rgba(20,5,5,0.8);
+      border: 1px solid rgba(139,0,0,0.3);
+      border-radius: 4px;
+      padding: 1.5rem;
+      max-width: 480px;
+      margin: 0 auto 2rem;
+      text-align: left;
+      font-size: 0.9rem;
+      line-height: 1.9;
+      color: #a08060;
+      position: relative;
+    }
+
+    .diary-entry::before {
+      content: '"';
+      font-family: 'Creepster', cursive;
+      font-size: 5rem;
+      color: rgba(139,0,0,0.2);
+      position: absolute;
+      top: -10px;
+      left: 10px;
+      line-height: 1;
+    }
+
+    .candles {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      margin-bottom: 2rem;
+    }
+
+    .candle { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+
+    .flame {
+      width: 8px;
+      height: 14px;
+      background: radial-gradient(ellipse at bottom, #ff9900, #ff4400, transparent);
+      border-radius: 50% 50% 30% 30%;
+      animation: flame-anim 0.5s ease-in-out infinite alternate;
+      filter: drop-shadow(0 0 6px rgba(255,140,0,0.8));
+    }
+
+    @keyframes flame-anim {
+      0% { transform: scaleX(1) scaleY(1) rotate(-2deg); opacity: 0.9; }
+      100% { transform: scaleX(0.8) scaleY(1.1) rotate(2deg); opacity: 1; }
+    }
+
+    .candle-body {
+      width: 14px;
+      height: 50px;
+      background: linear-gradient(to right, #d4c09a, #e8d5b0, #d4c09a);
+      border-radius: 2px;
+    }
+
+    .wax-drip {
+      width: 6px;
+      height: 12px;
+      background: #d4c09a;
+      border-radius: 0 0 50% 50%;
+      margin-top: -4px;
+    }
+
+    .btn-horror {
+      background: transparent;
+      border: 1px solid rgba(139,0,0,0.6);
+      color: #8b0000;
+      font-family: 'Creepster', cursive;
+      font-size: 1.2rem;
+      letter-spacing: 4px;
+      padding: 12px 32px;
+      cursor: pointer;
+      text-transform: uppercase;
+      transition: all 0.3s;
+    }
+
+    .btn-horror:hover {
+      background: rgba(139,0,0,0.15);
+      box-shadow: 0 0 20px rgba(139,0,0,0.5);
+      color: #cc0000;
+    }
+
+    /* Jump scare overlay */
+    .static-overlay {
+      position: fixed;
+      inset: 0;
+      background: #000;
+      z-index: 1000;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      animation: static-flash 0.1s steps(1) infinite;
+    }
+
+    @keyframes static-flash {
+      0%,100% { opacity: 1; }
+      50% { opacity: 0.85; }
+    }
+
+    .jumpscare-img { position: relative; z-index: 2; }
+
+    .static-noise {
+      position: absolute;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.15'/%3E%3C/svg%3E");
+      opacity: 0.2;
+    }
+
+    .shadow-figure {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      opacity: 0;
+      z-index: 1;
+      animation: shadow-appear 20s infinite;
+    }
+
+    @keyframes shadow-appear {
+      0%,70%,100% { opacity: 0; }
+      75%,95% { opacity: 0.12; }
+    }
+
+    .footer-text {
+      font-size: 0.7rem;
+      color: #3a2a1a;
+      letter-spacing: 3px;
+      margin-top: 2rem;
+      padding-bottom: 2rem;
+    }
+
+    .red-drip { color: #8b0000; font-size: 1.4rem; letter-spacing: 2px; }
+  </style>
+</head>
+<body class="flicker">
+  <div class="bg-noise"></div>
+
+  <!-- Jump Scare Overlay -->
+  <div class="static-overlay" id="jumpOverlay">
+    <div class="static-noise"></div>
+    <svg class="jumpscare-img" width="280" height="320" viewBox="0 0 280 320">
+      <defs>
+        <radialGradient id="faceGlow" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#ffccaa" stop-opacity="0.9"/>
+          <stop offset="100%" stop-color="#330000" stop-opacity="0"/>
+        </radialGradient>
+      </defs>
+      <ellipse cx="140" cy="140" rx="80" ry="100" fill="#f5dcc8" stroke="#8b0000" stroke-width="2"/>
+      <ellipse cx="140" cy="80" rx="55" ry="60" fill="#4a2a1a"/>
+      <path d="M85 130 Q140 120 195 130 Q185 90 140 85 Q95 90 85 130Z" fill="#3a1a0a"/>
+      <ellipse cx="108" cy="145" rx="18" ry="22" fill="white"/>
+      <ellipse cx="172" cy="145" rx="18" ry="22" fill="white"/>
+      <ellipse cx="108" cy="145" rx="14" ry="18" fill="#000"/>
+      <ellipse cx="172" cy="145" rx="14" ry="18" fill="#000"/>
+      <ellipse cx="112" cy="140" rx="5" ry="6" fill="#8b0000"/>
+      <ellipse cx="176" cy="140" rx="5" ry="6" fill="#8b0000"/>
+      <circle cx="110" cy="141" r="2" fill="white"/>
+      <circle cx="174" cy="141" r="2" fill="white"/>
+      <path d="M110 185 Q140 195 170 185 Q150 215 130 215Z" fill="#8b0000"/>
+      <path d="M105 185 Q140 178 175 185" fill="none" stroke="#5a0000" stroke-width="2"/>
+      <path d="M60 160 Q85 130 108 123" fill="none" stroke="#3a1a0a" stroke-width="3"/>
+      <path d="M220 160 Q195 130 172 123" fill="none" stroke="#3a1a0a" stroke-width="3"/>
+      <path d="M130 240 Q140 290 150 320" stroke="#8b0000" stroke-width="4" fill="none"/>
+      <path d="M140 240 Q130 280 125 320" stroke="#8b0000" stroke-width="3" fill="none"/>
+      <path d="M140 240 Q155 285 158 320" stroke="#8b0000" stroke-width="2" fill="none"/>
+      <text x="140" y="310" fill="#8b0000" font-family="serif" font-size="14" text-anchor="middle" opacity="0.6">나를 봐...</text>
+    </svg>
+  </div>
+
+  <!-- Shadow Figure -->
+  <svg class="shadow-figure" width="200" height="200" viewBox="0 0 200 200">
+    <ellipse cx="100" cy="180" rx="60" ry="10" fill="#1a0a0a"/>
+    <ellipse cx="100" cy="90" rx="35" ry="50" fill="#0a0505"/>
+    <ellipse cx="100" cy="50" rx="25" ry="30" fill="#0a0505"/>
+    <line x1="65" y1="100" x2="30" y2="130" stroke="#0a0505" stroke-width="8" stroke-linecap="round"/>
+    <line x1="135" y1="100" x2="170" y2="130" stroke="#0a0505" stroke-width="8" stroke-linecap="round"/>
+  </svg>
+
+  <div class="content">
+    <h1>ANNABELLE</h1>
+    <p class="subtitle">그녀는 항상 지켜보고 있다</p>
+
+    <!-- Candles -->
+    <div class="candles">
+      <div class="candle">
+        <div class="flame"></div>
+        <div class="candle-body"></div>
+        <div class="wax-drip"></div>
+      </div>
+      <div class="candle" style="transform: translateY(10px)">
+        <div class="flame" style="animation-delay: 0.2s"></div>
+        <div class="candle-body" style="height:35px"></div>
+        <div class="wax-drip"></div>
+      </div>
+      <div class="candle">
+        <div class="flame" style="animation-delay: 0.4s"></div>
+        <div class="candle-body"></div>
+        <div class="wax-drip"></div>
+      </div>
+    </div>
+
+    <!-- Annabelle Doll SVG -->
+    <div class="doll-container">
+      <svg class="doll-svg" width="220" height="280" viewBox="0 0 220 280">
+        <defs>
+          <radialGradient id="dollGlow" cx="50%" cy="30%" r="50%">
+            <stop offset="0%" stop-color="#f5dcc8"/>
+            <stop offset="100%" stop-color="#c4956a"/>
+          </radialGradient>
+        </defs>
+        <!-- Body -->
+        <rect x="75" y="155" width="70" height="110" rx="5" fill="#3a1a2a" stroke="#2a0a1a" stroke-width="1"/>
+        <!-- Arms -->
+        <rect x="65" y="160" width="20" height="80" rx="8" fill="#3a1a2a"/>
+        <rect x="135" y="160" width="20" height="80" rx="8" fill="#3a1a2a"/>
+        <!-- Shoulders -->
+        <rect x="55" y="155" width="12" height="5" fill="#2a0a1a" rx="2"/>
+        <rect x="153" y="155" width="12" height="5" fill="#2a0a1a" rx="2"/>
+        <!-- Legs -->
+        <rect x="80" y="240" width="25" height="40" rx="5" fill="#c4956a"/>
+        <rect x="115" y="240" width="25" height="40" rx="5" fill="#c4956a"/>
+        <!-- Shoes -->
+        <rect x="75" y="270" width="30" height="8" rx="2" fill="#4a2a1a"/>
+        <rect x="115" y="270" width="30" height="8" rx="2" fill="#4a2a1a"/>
+        <!-- Head -->
+        <ellipse cx="110" cy="95" rx="45" ry="55" fill="url(#dollGlow)"/>
+        <!-- Hair -->
+        <ellipse cx="110" cy="40" rx="42" ry="35" fill="#4a2a1a"/>
+        <path d="M68 30 Q75 10 90 20 Q100 5 110 15 Q120 2 132 18 Q148 8 152 28" fill="#3a1a0a"/>
+        <!-- Pigtails -->
+        <path d="M60 35 L55 55" stroke="#8b4a1a" stroke-width="6" stroke-linecap="round"/>
+        <path d="M160 35 L165 55" stroke="#8b4a1a" stroke-width="6" stroke-linecap="round"/>
+        <circle cx="65" cy="57" r="5" fill="#c4956a"/>
+        <circle cx="155" cy="57" r="5" fill="#c4956a"/>
+        <!-- Eyes (animated blink) -->
+        <g class="doll-eyes" id="dollEyes" style="transform-origin: 110px 95px">
+          <ellipse cx="92" cy="88" rx="9" ry="11" fill="#1a0a0a"/>
+          <ellipse cx="128" cy="88" rx="9" ry="11" fill="#1a0a0a"/>
+          <circle cx="89" cy="85" r="2.5" fill="white"/>
+          <circle cx="125" cy="85" r="2.5" fill="white"/>
+        </g>
+        <!-- Nose -->
+        <ellipse cx="110" cy="105" rx="6" ry="4" fill="#c4826a"/>
+        <!-- Mouth -->
+        <path d="M95 118 Q110 128 125 118" stroke="#8b0000" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <!-- Collar -->
+        <rect x="100" y="145" width="20" height="15" rx="2" fill="#2a0a1a"/>
+        <path d="M90 155 Q110 170 130 155" fill="#3a1a2a"/>
+        <!-- Eerie markings -->
+        <line x1="85" y1="85" x2="88" y2="105" stroke="#8b0000" stroke-width="0.8" opacity="0.5"/>
+        <line x1="130" y1="88" x2="128" y2="108" stroke="#8b0000" stroke-width="0.8" opacity="0.5"/>
+      </svg>
+    </div>
+
+    <p class="blood-text">그녀는 밤마다 움직인다...</p>
+
+    <div class="diary-entry">
+      <em>1968년 11월 7일</em><br><br>
+      오늘 밤 또 들렸다. 복도에서 발소리가. 분명히 집에는 나 혼자인데.<br>
+      인형의 눈이 바뀌어 있었다. 어젯밤과 다른 방향을 보고 있었다.<br><br>
+      <span style="color:#8b0000; font-size:0.8rem;">— 페이지 여기서 찢어짐 —</span>
+    </div>
+
+    <button class="btn-horror" onclick="triggerScare()">
+      진실을 알고 싶다면...
+    </button>
+
+    <div class="footer-text">
+      <span class="red-drip">†</span> &nbsp; 인형은 결코 혼자가 아니다 &nbsp; <span class="red-drip">†</span>
+    </div>
+  </div>
+
+  <script>
+    let scareTriggered = false;
+
+    function triggerScare() {
+      if (scareTriggered) return;
+      scareTriggered = true;
+
+      const overlay = document.getElementById('jumpOverlay');
+      overlay.style.display = 'flex';
+
+      // Horror sound effect via Web Audio API
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = ctx.createOscillator();
+        const gainNode = ctx.createGain();
+        oscillator.connect(gainNode);
+        gainNode.connect(ctx.destination);
+        oscillator.type = 'sawtooth';
+        oscillator.frequency.setValueAtTime(80, ctx.currentTime);
+        oscillator.frequency.exponentialRampToValueAtTime(600, ctx.currentTime + 0.3);
+        gainNode.gain.setValueAtTime(0.4, ctx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 1.2);
+        oscillator.start();
+        oscillator.stop(ctx.currentTime + 1.2);
+      } catch(e) {}
+
+      setTimeout(() => {
+        overlay.style.display = 'none';
+        scareTriggered = false;
+      }, 1800);
+    }
+
+    // Auto jumpscare every 18–40 seconds
+    function scheduleAutoScare() {
+      const delay = 18000 + Math.random() * 22000;
+      setTimeout(() => {
+        if (!scareTriggered) triggerScare();
+        scheduleAutoScare();
+      }, delay);
+    }
+    scheduleAutoScare();
+
+    // Doll eyes follow cursor
+    document.addEventListener('mousemove', (e) => {
+      const eyes = document.getElementById('dollEyes');
+      const doll = document.querySelector('.doll-svg');
+      const rect = doll.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + 200;
+      const dx = (e.clientX - cx) / window.innerWidth * 5;
+      const dy = (e.clientY - cy) / window.innerHeight * 4;
+      eyes.style.transform = `translate(${dx}px, ${dy}px)`;
+    });
+
+    // Close overlay on click
+    document.getElementById('jumpOverlay').addEventListener('click', () => {
+      document.getElementById('jumpOverlay').style.display = 'none';
+      scareTriggered = false;
+    });
+  </script>
+</body>
+</html>
