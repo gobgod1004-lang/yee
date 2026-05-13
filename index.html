@@ -1,434 +1,1055 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ANNABELLE</title>
-  <link href="https://fonts.googleapis.com/css2?family=Creepster&family=Special+Elite&display=swap" rel="stylesheet">
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ANNABELLE — 진실을 찾아서</title>
+<link href="https://fonts.googleapis.com/css2?family=Creepster&family=Special+Elite&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
+<style>
+:root {
+  --blood: #8b0000;
+  --blood-bright: #cc0000;
+  --gold: #c9a87a;
+  --gold-dim: #6b5a3a;
+  --bg: #080003;
+  --bg2: #0f0008;
+  --paper: #1a0d0a;
+  --paper-text: #a08060;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; }
 
-    body {
-      background: #0a0005;
-      min-height: 100vh;
-      font-family: 'Special Elite', cursive;
-      color: #c9a87a;
-      position: relative;
-      overflow-x: hidden;
-      cursor: crosshair;
-    }
+body {
+  background: var(--bg);
+  color: var(--gold);
+  font-family: 'Special Elite', cursive;
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24'%3E%3Ccircle cx='12' cy='12' r='5' fill='none' stroke='%238b0000' stroke-width='1.5'/%3E%3Cline x1='12' y1='0' x2='12' y2='8' stroke='%238b0000' stroke-width='1'/%3E%3Cline x1='12' y1='16' x2='12' y2='24' stroke='%238b0000' stroke-width='1'/%3E%3Cline x1='0' y1='12' x2='8' y2='12' stroke='%238b0000' stroke-width='1'/%3E%3Cline x1='16' y1='12' x2='24' y2='12' stroke='%238b0000' stroke-width='1'/%3E%3C/svg%3E") 12 12, crosshair;
+  overflow-x: hidden;
+  min-height: 100vh;
+}
 
-    .bg-noise {
-      position: fixed;
-      inset: 0;
-      background-image:
-        radial-gradient(ellipse at 20% 50%, rgba(80,0,20,0.3) 0%, transparent 60%),
-        radial-gradient(ellipse at 80% 20%, rgba(40,0,10,0.4) 0%, transparent 50%);
-      pointer-events: none;
-      z-index: 0;
-    }
+/* ── LOADING SCREEN ── */
+#loading {
+  position: fixed; inset: 0; background: #000; z-index: 9999;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  transition: opacity 1s;
+}
+#loading h1 {
+  font-family: 'Creepster', cursive;
+  font-size: 4rem; color: var(--blood);
+  text-shadow: 0 0 40px rgba(139,0,0,0.9);
+  letter-spacing: 12px;
+  animation: loadpulse 1.5s ease-in-out infinite;
+}
+@keyframes loadpulse {
+  0%,100%{opacity:0.4} 50%{opacity:1}
+}
+#loading p { color: #3a1a1a; letter-spacing: 4px; font-size: 0.8rem; margin-top: 1rem; }
+#loading .bar { width: 200px; height: 2px; background: #1a0505; margin-top: 2rem; border-radius: 1px; overflow: hidden; }
+#loading .bar-fill { height: 100%; background: var(--blood); width: 0%; transition: width 0.1s; }
 
-    .flicker { animation: flicker 8s infinite; }
+/* ── JUMP SCARE ── */
+#scare {
+  position: fixed; inset: 0; background: #000; z-index: 8888;
+  display: none; align-items: center; justify-content: center;
+  animation: scarebg 0.08s steps(1) infinite;
+}
+@keyframes scarebg { 0%,100%{background:#000} 50%{background:#0a0000} }
+#scare svg { animation: scareshake 0.1s infinite; }
+@keyframes scareshake {
+  0%{transform:translate(0,0) rotate(0deg)}
+  25%{transform:translate(-8px,4px) rotate(-2deg)}
+  50%{transform:translate(6px,-6px) rotate(1deg)}
+  75%{transform:translate(-4px,8px) rotate(-1deg)}
+  100%{transform:translate(8px,-3px) rotate(2deg)}
+}
 
-    @keyframes flicker {
-      0%,95%,97%,100% { opacity: 1; }
-      96% { opacity: 0.3; }
-      98% { opacity: 0.7; }
-    }
+/* ── NAV ── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  padding: 1rem 2rem;
+  display: flex; justify-content: space-between; align-items: center;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent);
+}
+.nav-logo { font-family:'Creepster',cursive; font-size:1.4rem; color:var(--blood); letter-spacing:6px; text-shadow:0 0 20px rgba(139,0,0,0.6); }
+.nav-links { display:flex; gap:1.5rem; }
+.nav-links a { color:var(--gold-dim); font-size:0.75rem; letter-spacing:3px; text-decoration:none; text-transform:uppercase; transition:color 0.3s; }
+.nav-links a:hover { color:var(--gold); }
+#sanity-bar-wrap { display:flex; align-items:center; gap:8px; }
+#sanity-bar-wrap span { font-size:0.7rem; color:var(--gold-dim); letter-spacing:2px; }
+#sanity-bar { width:80px; height:4px; background:#1a0505; border-radius:2px; overflow:hidden; }
+#sanity-fill { height:100%; width:100%; background:var(--blood); transition:width 1s; border-radius:2px; }
 
-    .content {
-      position: relative;
-      z-index: 2;
-      padding: 2rem;
-      text-align: center;
-    }
+/* ── HERO ── */
+#hero {
+  min-height: 100vh;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  position: relative; overflow: hidden;
+}
+.bg-glow {
+  position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(ellipse at 50% 60%, rgba(80,0,10,0.4) 0%, transparent 70%);
+  animation: bgpulse 4s ease-in-out infinite;
+}
+@keyframes bgpulse { 0%,100%{opacity:0.6} 50%{opacity:1} }
+.hero-date { color:#3a2a1a; letter-spacing:6px; font-size:0.75rem; text-transform:uppercase; margin-bottom:1rem; }
+#hero h1 {
+  font-family:'Creepster',cursive; font-size:clamp(3rem,10vw,7rem); color:var(--blood);
+  letter-spacing:16px; text-shadow:0 0 60px rgba(139,0,0,0.8), 0 0 120px rgba(139,0,0,0.3);
+  animation: titleglow 3s ease-in-out infinite; text-align:center;
+}
+@keyframes titleglow {
+  0%,100%{text-shadow:0 0 60px rgba(139,0,0,0.8),0 0 120px rgba(139,0,0,0.3)}
+  50%{text-shadow:0 0 80px rgba(200,0,0,1),0 0 160px rgba(139,0,0,0.7)}
+}
+.hero-sub { color:var(--gold-dim); letter-spacing:8px; font-size:0.85rem; text-transform:uppercase; margin-top:0.5rem; }
+.hero-doll { margin: 2.5rem 0; position: relative; }
+.hero-doll svg { filter:drop-shadow(0 0 30px rgba(139,0,0,0.7)); animation:dollsway 5s ease-in-out infinite; }
+@keyframes dollsway { 0%,100%{transform:rotate(-3deg) translateY(0)} 50%{transform:rotate(3deg) translateY(-8px)} }
+.doll-eyes-g { animation:blink 7s infinite; transform-origin:110px 95px; }
+@keyframes blink { 0%,88%,91%,100%{transform:scaleY(1)} 89%,90%{transform:scaleY(0.05)} }
+.hero-scroll { margin-top:2rem; color:#3a2a1a; font-size:0.7rem; letter-spacing:5px; text-transform:uppercase; animation:bounce 2s ease-in-out infinite; }
+@keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(6px)} }
+.blood-drips { display:flex; justify-content:center; gap:3px; margin: 1rem 0 0; }
+.drip { width:3px; border-radius:0 0 50% 50%; background:var(--blood); opacity:0.7; animation:drip-fall 3s ease-in infinite; }
+@keyframes drip-fall { 0%{height:0;opacity:0.7} 60%{height:30px;opacity:0.7} 100%{height:40px;opacity:0} }
 
-    h1 {
-      font-family: 'Creepster', cursive;
-      font-size: 3.5rem;
-      color: #8b0000;
-      text-shadow: 0 0 30px rgba(139,0,0,0.8), 0 0 60px rgba(139,0,0,0.4);
-      letter-spacing: 8px;
-      margin-bottom: 0.5rem;
-      animation: pulse-title 3s ease-in-out infinite;
-    }
+/* ── SECTIONS ── */
+section { padding: 5rem 2rem; max-width: 860px; margin: 0 auto; }
+.section-tag { font-size:0.7rem; letter-spacing:6px; text-transform:uppercase; color:var(--gold-dim); margin-bottom:1rem; display:flex; align-items:center; gap:12px; }
+.section-tag::after { content:''; flex:1; height:1px; background:rgba(139,0,0,0.3); }
+.section-title { font-family:'Creepster',cursive; font-size:2.2rem; color:var(--blood); letter-spacing:4px; margin-bottom:2rem; }
 
-    @keyframes pulse-title {
-      0%,100% { text-shadow: 0 0 30px rgba(139,0,0,0.8), 0 0 60px rgba(139,0,0,0.4); }
-      50% { text-shadow: 0 0 50px rgba(200,0,0,1), 0 0 100px rgba(139,0,0,0.8); }
-    }
+/* ── STORY / JOURNAL ── */
+#journal { background: linear-gradient(135deg, rgba(20,5,5,0.6), rgba(10,0,3,0.8)); border:1px solid rgba(139,0,0,0.15); border-radius:4px; }
+.journal-pages { display:flex; flex-direction:column; gap:1.5rem; }
+.page {
+  background: rgba(15,5,3,0.9); border:1px solid rgba(139,0,0,0.2); border-radius:3px;
+  padding:1.5rem; position:relative; cursor:pointer;
+  transition: border-color 0.3s, background 0.3s;
+  opacity: 0.3; pointer-events: none;
+}
+.page.unlocked { opacity:1; pointer-events:auto; }
+.page.unlocked:hover { border-color:rgba(139,0,0,0.5); background:rgba(20,5,5,0.95); }
+.page.read { opacity:0.6; }
+.page-date { font-size:0.75rem; color:var(--blood); letter-spacing:3px; margin-bottom:0.8rem; }
+.page-text { font-family:'IM Fell English',serif; font-size:0.95rem; line-height:1.9; color:var(--paper-text); }
+.page-text em { color:var(--gold); font-style:italic; }
+.page-lock { position:absolute; right:1rem; top:1rem; font-size:1.5rem; color:#2a1a1a; }
+.page.unlocked .page-lock { display:none; }
+.page-choice { display:flex; gap:0.8rem; margin-top:1.2rem; flex-wrap:wrap; }
+.choice-btn {
+  background:transparent; border:1px solid rgba(139,0,0,0.4); color:#8b4a4a;
+  font-family:'Special Elite',cursive; font-size:0.8rem; letter-spacing:2px;
+  padding:8px 16px; cursor:pointer; transition:all 0.3s; border-radius:2px;
+  text-transform:uppercase;
+}
+.choice-btn:hover { background:rgba(139,0,0,0.15); color:var(--gold); border-color:rgba(139,0,0,0.7); }
+.choice-btn:disabled { opacity:0.3; cursor:not-allowed; }
+.choice-result { margin-top:1rem; padding:0.8rem; background:rgba(139,0,0,0.08); border-left:2px solid var(--blood); font-family:'IM Fell English',serif; font-size:0.9rem; color:var(--gold); display:none; line-height:1.7; }
 
-    .subtitle {
-      font-size: 0.9rem;
-      color: #6b5a3a;
-      letter-spacing: 6px;
-      text-transform: uppercase;
-      margin-bottom: 3rem;
-    }
+/* ── OUIJA BOARD ── */
+#ouija-section { text-align:center; }
+#ouija-board {
+  display:inline-block; background:rgba(12,3,3,0.95); border:2px solid rgba(139,0,0,0.4);
+  border-radius:8px; padding:2rem; max-width:600px; width:100%; margin:0 auto;
+  box-shadow:0 0 60px rgba(139,0,0,0.15);
+}
+.ouija-title-row { display:flex; justify-content:space-between; align-items:center; margin-bottom:1.2rem; }
+.ouija-word { font-family:'Creepster',cursive; font-size:2rem; color:var(--blood); letter-spacing:8px; text-shadow:0 0 20px rgba(139,0,0,0.6); }
+.ouija-sun, .ouija-moon { font-size:1.5rem; opacity:0.6; }
+.ouija-letters { display:flex; flex-wrap:wrap; justify-content:center; gap:4px; margin-bottom:1rem; }
+.ouija-letter {
+  width:38px; height:38px; display:flex; align-items:center; justify-content:center;
+  font-family:'Creepster',cursive; font-size:1.1rem; color:var(--gold-dim);
+  border:1px solid rgba(139,0,0,0.2); border-radius:50%; cursor:pointer;
+  transition:all 0.2s; user-select:none;
+}
+.ouija-letter:hover { color:var(--blood); border-color:rgba(139,0,0,0.7); background:rgba(139,0,0,0.1); text-shadow:0 0 10px rgba(139,0,0,0.8); }
+.ouija-letter.lit { color:var(--blood); border-color:var(--blood); background:rgba(139,0,0,0.2); text-shadow:0 0 15px rgba(139,0,0,1); animation:letterlit 0.4s ease-out; }
+@keyframes letterlit { 0%{transform:scale(1.5)} 100%{transform:scale(1)} }
+.ouija-numbers { display:flex; justify-content:center; gap:4px; margin-bottom:1rem; }
+.ouija-yesno { display:flex; justify-content:space-between; margin-bottom:1rem; }
+.ouija-yn { font-family:'Creepster',cursive; font-size:1.3rem; color:var(--gold-dim); letter-spacing:3px; }
+.ouija-display {
+  background:rgba(5,0,0,0.8); border:1px solid rgba(139,0,0,0.3); border-radius:4px;
+  padding:0.8rem; min-height:50px; font-family:'Creepster',cursive; font-size:1.4rem;
+  color:var(--blood); letter-spacing:6px; text-align:center;
+  text-shadow:0 0 10px rgba(139,0,0,0.7); margin-bottom:1rem;
+}
+.ouija-input-row { display:flex; gap:8px; }
+#ouija-input {
+  flex:1; background:rgba(10,0,5,0.8); border:1px solid rgba(139,0,0,0.3); border-radius:3px;
+  color:var(--gold); font-family:'Special Elite',cursive; font-size:0.9rem; padding:10px 14px;
+  outline:none; letter-spacing:2px;
+}
+#ouija-input:focus { border-color:rgba(139,0,0,0.7); }
+#ouija-input::placeholder { color:#3a2a1a; }
+#ouija-ask {
+  background:transparent; border:1px solid rgba(139,0,0,0.5); color:var(--blood);
+  font-family:'Creepster',cursive; font-size:1rem; letter-spacing:3px; padding:10px 20px;
+  cursor:pointer; transition:all 0.3s; border-radius:3px;
+}
+#ouija-ask:hover { background:rgba(139,0,0,0.15); }
+.ouija-response { margin-top:1rem; font-family:'IM Fell English',serif; font-size:0.9rem; color:var(--paper-text); min-height:30px; font-style:italic; line-height:1.6; }
 
-    .doll-container {
-      position: relative;
-      width: 220px;
-      margin: 0 auto 2rem;
-    }
+/* ── EVIDENCE ROOM ── */
+#evidence { }
+.evidence-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:1rem; }
+.evidence-card {
+  background:rgba(15,5,5,0.9); border:1px solid rgba(139,0,0,0.2); border-radius:4px;
+  padding:1.2rem; cursor:pointer; transition:all 0.3s; position:relative; overflow:hidden;
+  opacity:0.4; pointer-events:none;
+}
+.evidence-card.found { opacity:1; pointer-events:auto; }
+.evidence-card.found:hover { border-color:rgba(139,0,0,0.6); background:rgba(20,5,5,0.95); transform:translateY(-2px); }
+.evidence-card::before {
+  content:''; position:absolute; top:0; left:0; right:0; height:2px;
+  background:var(--blood); transform:scaleX(0); transition:transform 0.3s;
+}
+.evidence-card.found:hover::before { transform:scaleX(1); }
+.evidence-icon { font-size:2rem; margin-bottom:0.8rem; filter:grayscale(1); transition:filter 0.3s; }
+.evidence-card.found:hover .evidence-icon { filter:none; }
+.evidence-name { font-size:0.8rem; color:var(--gold); letter-spacing:2px; text-transform:uppercase; margin-bottom:0.4rem; }
+.evidence-desc { font-size:0.75rem; color:var(--gold-dim); line-height:1.5; }
+.evidence-badge { position:absolute; top:8px; right:8px; background:var(--blood); color:#ffaaaa; font-size:0.6rem; letter-spacing:1px; padding:2px 6px; border-radius:2px; display:none; }
+.evidence-card.found .evidence-badge { display:block; }
+.evidence-overlay {
+  position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:500;
+  display:none; align-items:center; justify-content:center; padding:2rem;
+}
+.evidence-detail {
+  background:var(--paper); border:1px solid rgba(139,0,0,0.4); border-radius:6px;
+  padding:2.5rem; max-width:500px; width:100%; position:relative;
+}
+.evidence-detail h3 { font-family:'Creepster',cursive; font-size:1.8rem; color:var(--blood); margin-bottom:1.2rem; letter-spacing:4px; }
+.evidence-detail p { font-family:'IM Fell English',serif; line-height:1.9; color:var(--paper-text); font-size:0.95rem; }
+.evidence-close { position:absolute; top:1rem; right:1rem; background:none; border:1px solid rgba(139,0,0,0.4); color:var(--blood); font-size:1.2rem; width:32px; height:32px; cursor:pointer; border-radius:2px; }
 
-    .doll-svg {
-      filter: drop-shadow(0 0 20px rgba(139,0,0,0.6));
-      animation: doll-sway 4s ease-in-out infinite;
-    }
+/* ── RITUAL ROOM ── */
+#ritual { text-align:center; }
+#ritual-board {
+  background:rgba(8,0,5,0.95); border:2px solid rgba(139,0,0,0.3); border-radius:8px;
+  padding:2.5rem; max-width:500px; margin:0 auto; position:relative;
+}
+.pentagram { margin:0 auto 2rem; }
+.candle-row { display:flex; justify-content:center; gap:30px; margin-bottom:2rem; }
+.r-candle { display:flex; flex-direction:column; align-items:center; gap:2px; cursor:pointer; transition:filter 0.3s; }
+.r-candle .flame { width:8px; height:16px; background:radial-gradient(ellipse at bottom,#ff9900,#ff4400,transparent); border-radius:50% 50% 30% 30%; animation:flamewave 0.4s ease-in-out infinite alternate; filter:drop-shadow(0 0 8px rgba(255,140,0,0.9)); }
+@keyframes flamewave { 0%{transform:scaleX(1) rotate(-2deg)} 100%{transform:scaleX(0.7) rotate(2deg)} }
+.r-candle.off .flame { display:none; }
+.r-candle .cbody { width:14px; height:55px; background:linear-gradient(to right,#d4c09a,#e8d5b0,#d4c09a); border-radius:2px; }
+.r-candle.off { filter:grayscale(1) brightness(0.5); }
+.ritual-text { font-family:'IM Fell English',serif; font-style:italic; color:var(--paper-text); font-size:0.95rem; line-height:1.8; margin-bottom:1.5rem; }
+.ritual-progress { height:3px; background:#1a0505; border-radius:1px; overflow:hidden; margin-bottom:1.5rem; }
+.ritual-fill { height:100%; background:var(--blood); width:0%; transition:width 0.8s; }
+#ritual-btn {
+  background:transparent; border:1px solid rgba(139,0,0,0.5); color:var(--blood);
+  font-family:'Creepster',cursive; font-size:1.2rem; letter-spacing:4px; padding:12px 32px;
+  cursor:pointer; transition:all 0.3s; text-transform:uppercase;
+}
+#ritual-btn:hover { background:rgba(139,0,0,0.2); box-shadow:0 0 30px rgba(139,0,0,0.4); }
+#ritual-result { margin-top:1.5rem; font-family:'IM Fell English',serif; font-size:1rem; color:var(--gold); line-height:1.8; min-height:40px; font-style:italic; }
 
-    @keyframes doll-sway {
-      0%,100% { transform: rotate(-2deg); }
-      50% { transform: rotate(2deg); }
-    }
+/* ── SURVIVAL TEST ── */
+#survival { }
+#survival-game {
+  background:rgba(8,0,5,0.95); border:1px solid rgba(139,0,0,0.25); border-radius:6px; padding:2rem;
+}
+.surv-scenario { font-family:'IM Fell English',serif; font-size:1rem; color:var(--paper-text); line-height:1.9; margin-bottom:1.5rem; padding:1.2rem; background:rgba(139,0,0,0.05); border-left:2px solid rgba(139,0,0,0.4); border-radius:2px; }
+.surv-choices { display:flex; flex-direction:column; gap:0.8rem; }
+.surv-choice {
+  background:transparent; border:1px solid rgba(139,0,0,0.25); color:var(--gold-dim);
+  font-family:'Special Elite',cursive; font-size:0.85rem; letter-spacing:1px; padding:12px 18px;
+  cursor:pointer; transition:all 0.3s; text-align:left; border-radius:3px;
+}
+.surv-choice:hover:not(:disabled) { border-color:rgba(139,0,0,0.6); color:var(--gold); background:rgba(139,0,0,0.08); }
+.surv-choice.correct { border-color:#2d8a2d; color:#5aaa5a; background:rgba(45,138,45,0.1); }
+.surv-choice.wrong { border-color:var(--blood); color:#cc4444; background:rgba(139,0,0,0.15); }
+.surv-choice:disabled { cursor:not-allowed; }
+.surv-feedback { margin-top:1rem; padding:1rem; font-family:'IM Fell English',serif; font-size:0.9rem; line-height:1.7; border-radius:3px; display:none; }
+.surv-feedback.correct { background:rgba(45,138,45,0.1); border-left:2px solid #2d8a2d; color:#5aaa5a; }
+.surv-feedback.wrong { background:rgba(139,0,0,0.1); border-left:2px solid var(--blood); color:#cc4444; }
+.surv-next {
+  margin-top:1rem; background:transparent; border:1px solid rgba(139,0,0,0.4); color:var(--blood);
+  font-family:'Creepster',cursive; font-size:1rem; letter-spacing:3px; padding:10px 24px;
+  cursor:pointer; display:none; transition:all 0.3s;
+}
+.surv-next:hover { background:rgba(139,0,0,0.15); }
+.surv-stats { display:flex; gap:1.5rem; margin-bottom:1.5rem; }
+.surv-stat { text-align:center; }
+.surv-stat-val { font-family:'Creepster',cursive; font-size:1.8rem; color:var(--blood); line-height:1; }
+.surv-stat-label { font-size:0.7rem; color:var(--gold-dim); letter-spacing:2px; text-transform:uppercase; }
+.surv-end { text-align:center; padding:2rem; }
+.surv-end h3 { font-family:'Creepster',cursive; font-size:2rem; color:var(--blood); letter-spacing:4px; margin-bottom:1rem; }
+.surv-end p { font-family:'IM Fell English',serif; color:var(--paper-text); line-height:1.8; margin-bottom:1.5rem; }
+.surv-restart { background:transparent; border:1px solid rgba(139,0,0,0.5); color:var(--blood); font-family:'Creepster',cursive; font-size:1rem; letter-spacing:3px; padding:10px 24px; cursor:pointer; }
 
-    .doll-eyes { animation: blink 6s infinite; }
+/* ── FOOTER ── */
+footer { text-align:center; padding:3rem 2rem; border-top:1px solid rgba(139,0,0,0.1); }
+footer p { font-size:0.7rem; color:#2a1a1a; letter-spacing:4px; text-transform:uppercase; }
+.cross { color:var(--blood); font-size:1.2rem; }
 
-    @keyframes blink {
-      0%,90%,92%,100% { transform: scaleY(1); }
-      91% { transform: scaleY(0.05); }
-    }
+/* ── AMBIENT ── */
+.ambient-flicker { animation:ambflicker 12s infinite; }
+@keyframes ambflicker {
+  0%,93%,96%,100%{opacity:1} 94%,95%{opacity:0.4}
+}
+.scanlines {
+  position:fixed; inset:0; pointer-events:none; z-index:200;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.03) 2px,rgba(0,0,0,0.03) 4px);
+}
+.vignette {
+  position:fixed; inset:0; pointer-events:none; z-index:199;
+  background:radial-gradient(ellipse at center,transparent 40%,rgba(0,0,0,0.7) 100%);
+}
 
-    .blood-text {
-      font-family: 'Creepster', cursive;
-      font-size: 1.3rem;
-      color: #8b0000;
-      margin-bottom: 1.5rem;
-      opacity: 0.9;
-    }
+/* ── NOTIFICATIONS ── */
+#notif {
+  position:fixed; bottom:2rem; right:2rem; z-index:300;
+  background:rgba(10,0,5,0.95); border:1px solid rgba(139,0,0,0.4); border-radius:4px;
+  padding:1rem 1.5rem; max-width:280px; display:none;
+  animation:slidein 0.4s ease-out;
+}
+@keyframes slidein { from{transform:translateX(20px);opacity:0} to{transform:translateX(0);opacity:1} }
+#notif p { font-size:0.8rem; color:var(--gold); letter-spacing:1px; line-height:1.5; }
+#notif strong { color:var(--blood); }
 
-    .diary-entry {
-      background: rgba(20,5,5,0.8);
-      border: 1px solid rgba(139,0,0,0.3);
-      border-radius: 4px;
-      padding: 1.5rem;
-      max-width: 480px;
-      margin: 0 auto 2rem;
-      text-align: left;
-      font-size: 0.9rem;
-      line-height: 1.9;
-      color: #a08060;
-      position: relative;
-    }
-
-    .diary-entry::before {
-      content: '"';
-      font-family: 'Creepster', cursive;
-      font-size: 5rem;
-      color: rgba(139,0,0,0.2);
-      position: absolute;
-      top: -10px;
-      left: 10px;
-      line-height: 1;
-    }
-
-    .candles {
-      display: flex;
-      justify-content: center;
-      gap: 40px;
-      margin-bottom: 2rem;
-    }
-
-    .candle { display: flex; flex-direction: column; align-items: center; gap: 2px; }
-
-    .flame {
-      width: 8px;
-      height: 14px;
-      background: radial-gradient(ellipse at bottom, #ff9900, #ff4400, transparent);
-      border-radius: 50% 50% 30% 30%;
-      animation: flame-anim 0.5s ease-in-out infinite alternate;
-      filter: drop-shadow(0 0 6px rgba(255,140,0,0.8));
-    }
-
-    @keyframes flame-anim {
-      0% { transform: scaleX(1) scaleY(1) rotate(-2deg); opacity: 0.9; }
-      100% { transform: scaleX(0.8) scaleY(1.1) rotate(2deg); opacity: 1; }
-    }
-
-    .candle-body {
-      width: 14px;
-      height: 50px;
-      background: linear-gradient(to right, #d4c09a, #e8d5b0, #d4c09a);
-      border-radius: 2px;
-    }
-
-    .wax-drip {
-      width: 6px;
-      height: 12px;
-      background: #d4c09a;
-      border-radius: 0 0 50% 50%;
-      margin-top: -4px;
-    }
-
-    .btn-horror {
-      background: transparent;
-      border: 1px solid rgba(139,0,0,0.6);
-      color: #8b0000;
-      font-family: 'Creepster', cursive;
-      font-size: 1.2rem;
-      letter-spacing: 4px;
-      padding: 12px 32px;
-      cursor: pointer;
-      text-transform: uppercase;
-      transition: all 0.3s;
-    }
-
-    .btn-horror:hover {
-      background: rgba(139,0,0,0.15);
-      box-shadow: 0 0 20px rgba(139,0,0,0.5);
-      color: #cc0000;
-    }
-
-    /* Jump scare overlay */
-    .static-overlay {
-      position: fixed;
-      inset: 0;
-      background: #000;
-      z-index: 1000;
-      display: none;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      animation: static-flash 0.1s steps(1) infinite;
-    }
-
-    @keyframes static-flash {
-      0%,100% { opacity: 1; }
-      50% { opacity: 0.85; }
-    }
-
-    .jumpscare-img { position: relative; z-index: 2; }
-
-    .static-noise {
-      position: absolute;
-      inset: 0;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.15'/%3E%3C/svg%3E");
-      opacity: 0.2;
-    }
-
-    .shadow-figure {
-      position: fixed;
-      bottom: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      opacity: 0;
-      z-index: 1;
-      animation: shadow-appear 20s infinite;
-    }
-
-    @keyframes shadow-appear {
-      0%,70%,100% { opacity: 0; }
-      75%,95% { opacity: 0.12; }
-    }
-
-    .footer-text {
-      font-size: 0.7rem;
-      color: #3a2a1a;
-      letter-spacing: 3px;
-      margin-top: 2rem;
-      padding-bottom: 2rem;
-    }
-
-    .red-drip { color: #8b0000; font-size: 1.4rem; letter-spacing: 2px; }
-  </style>
+/* ── MOBILE ── */
+@media(max-width:600px) {
+  #hero h1 { letter-spacing:8px; }
+  .evidence-grid { grid-template-columns:repeat(2,1fr); }
+  nav { padding:0.8rem 1rem; }
+  .nav-links { display:none; }
+}
+</style>
 </head>
-<body class="flicker">
-  <div class="bg-noise"></div>
+<body>
 
-  <!-- Jump Scare Overlay -->
-  <div class="static-overlay" id="jumpOverlay">
-    <div class="static-noise"></div>
-    <svg class="jumpscare-img" width="280" height="320" viewBox="0 0 280 320">
-      <defs>
-        <radialGradient id="faceGlow" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stop-color="#ffccaa" stop-opacity="0.9"/>
-          <stop offset="100%" stop-color="#330000" stop-opacity="0"/>
-        </radialGradient>
-      </defs>
-      <ellipse cx="140" cy="140" rx="80" ry="100" fill="#f5dcc8" stroke="#8b0000" stroke-width="2"/>
-      <ellipse cx="140" cy="80" rx="55" ry="60" fill="#4a2a1a"/>
-      <path d="M85 130 Q140 120 195 130 Q185 90 140 85 Q95 90 85 130Z" fill="#3a1a0a"/>
-      <ellipse cx="108" cy="145" rx="18" ry="22" fill="white"/>
-      <ellipse cx="172" cy="145" rx="18" ry="22" fill="white"/>
-      <ellipse cx="108" cy="145" rx="14" ry="18" fill="#000"/>
-      <ellipse cx="172" cy="145" rx="14" ry="18" fill="#000"/>
-      <ellipse cx="112" cy="140" rx="5" ry="6" fill="#8b0000"/>
-      <ellipse cx="176" cy="140" rx="5" ry="6" fill="#8b0000"/>
-      <circle cx="110" cy="141" r="2" fill="white"/>
-      <circle cx="174" cy="141" r="2" fill="white"/>
-      <path d="M110 185 Q140 195 170 185 Q150 215 130 215Z" fill="#8b0000"/>
-      <path d="M105 185 Q140 178 175 185" fill="none" stroke="#5a0000" stroke-width="2"/>
-      <path d="M60 160 Q85 130 108 123" fill="none" stroke="#3a1a0a" stroke-width="3"/>
-      <path d="M220 160 Q195 130 172 123" fill="none" stroke="#3a1a0a" stroke-width="3"/>
-      <path d="M130 240 Q140 290 150 320" stroke="#8b0000" stroke-width="4" fill="none"/>
-      <path d="M140 240 Q130 280 125 320" stroke="#8b0000" stroke-width="3" fill="none"/>
-      <path d="M140 240 Q155 285 158 320" stroke="#8b0000" stroke-width="2" fill="none"/>
-      <text x="140" y="310" fill="#8b0000" font-family="serif" font-size="14" text-anchor="middle" opacity="0.6">나를 봐...</text>
+<!-- LOADING -->
+<div id="loading">
+  <h1>ANNABELLE</h1>
+  <p>정신을 가다듬고 있습니다...</p>
+  <div class="bar"><div class="bar-fill" id="bar-fill"></div></div>
+</div>
+
+<!-- JUMP SCARE -->
+<div id="scare">
+  <svg width="320" height="380" viewBox="0 0 320 380">
+    <defs>
+      <radialGradient id="rg" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#f5dcc8"/>
+        <stop offset="80%" stop-color="#c4956a"/>
+        <stop offset="100%" stop-color="#330000"/>
+      </radialGradient>
+    </defs>
+    <ellipse cx="160" cy="170" rx="95" ry="115" fill="url(#rg)" stroke="#8b0000" stroke-width="2"/>
+    <ellipse cx="160" cy="100" rx="65" ry="70" fill="#3a1a0a"/>
+    <path d="M95 155 Q160 140 225 155 Q215 105 160 100 Q105 105 95 155Z" fill="#2a1005"/>
+    <ellipse cx="126" cy="175" rx="22" ry="26" fill="white"/>
+    <ellipse cx="194" cy="175" rx="22" ry="26" fill="white"/>
+    <ellipse cx="126" cy="175" rx="17" ry="21" fill="#050000"/>
+    <ellipse cx="194" cy="175" rx="17" ry="21" fill="#050000"/>
+    <ellipse cx="130" cy="169" rx="7" ry="8" fill="#8b0000"/>
+    <ellipse cx="198" cy="169" rx="7" ry="8" fill="#8b0000"/>
+    <circle cx="128" cy="168" r="3" fill="white"/>
+    <circle cx="196" cy="168" r="3" fill="white"/>
+    <path d="M128 220 Q160 232 192 220 Q170 258 150 258Z" fill="#8b0000"/>
+    <path d="M122 220 Q160 210 198 220" fill="none" stroke="#5a0000" stroke-width="2.5"/>
+    <path d="M60 200 Q95 160 126 152" fill="none" stroke="#2a1005" stroke-width="4"/>
+    <path d="M260 200 Q225 160 194 152" fill="none" stroke="#2a1005" stroke-width="4"/>
+    <path d="M148 285 Q160 340 172 380" stroke="#8b0000" stroke-width="5" fill="none"/>
+    <path d="M158 285 Q148 335 143 380" stroke="#8b0000" stroke-width="4" fill="none"/>
+    <path d="M162 285 Q175 338 178 380" stroke="#8b0000" stroke-width="3" fill="none"/>
+    <text x="160" y="368" fill="#8b0000" font-family="serif" font-size="16" text-anchor="middle" opacity="0.7">도망쳐...</text>
+  </svg>
+</div>
+
+<!-- SCANLINES + VIGNETTE -->
+<div class="scanlines"></div>
+<div class="vignette"></div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">†ANNABELLE†</div>
+  <div class="nav-links">
+    <a href="#journal-section">일지</a>
+    <a href="#ouija-section">위자보드</a>
+    <a href="#evidence">증거</a>
+    <a href="#ritual">의식</a>
+    <a href="#survival">생존</a>
+  </div>
+  <div id="sanity-bar-wrap">
+    <span>정신력</span>
+    <div id="sanity-bar"><div id="sanity-fill"></div></div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="bg-glow"></div>
+  <p class="hero-date">1968 · NOV · 7</p>
+  <h1 class="ambient-flicker">ANNABELLE</h1>
+  <p class="hero-sub">그녀는 항상 지켜보고 있다</p>
+  <div class="hero-doll">
+    <svg width="200" height="260" viewBox="0 0 220 280">
+      <defs><radialGradient id="dg" cx="50%" cy="30%" r="50%"><stop offset="0%" stop-color="#f5dcc8"/><stop offset="100%" stop-color="#c4956a"/></radialGradient></defs>
+      <rect x="75" y="155" width="70" height="110" rx="5" fill="#3a1a2a"/>
+      <rect x="65" y="160" width="20" height="80" rx="8" fill="#3a1a2a"/>
+      <rect x="135" y="160" width="20" height="80" rx="8" fill="#3a1a2a"/>
+      <rect x="80" y="240" width="25" height="40" rx="5" fill="#c4956a"/>
+      <rect x="115" y="240" width="25" height="40" rx="5" fill="#c4956a"/>
+      <rect x="75" y="270" width="30" height="8" rx="2" fill="#4a2a1a"/>
+      <rect x="115" y="270" width="30" height="8" rx="2" fill="#4a2a1a"/>
+      <ellipse cx="110" cy="95" rx="45" ry="55" fill="url(#dg)"/>
+      <ellipse cx="110" cy="40" rx="42" ry="35" fill="#4a2a1a"/>
+      <path d="M68 30 Q75 10 90 20 Q100 5 110 15 Q120 2 132 18 Q148 8 152 28" fill="#3a1a0a"/>
+      <g class="doll-eyes-g" id="heroEyes">
+        <ellipse cx="92" cy="88" rx="9" ry="11" fill="#1a0a0a"/>
+        <ellipse cx="128" cy="88" rx="9" ry="11" fill="#1a0a0a"/>
+        <circle cx="89" cy="85" r="2.5" fill="white"/>
+        <circle cx="125" cy="85" r="2.5" fill="white"/>
+      </g>
+      <ellipse cx="110" cy="105" rx="6" ry="4" fill="#c4826a"/>
+      <path d="M95 118 Q110 128 125 118" stroke="#8b0000" stroke-width="2" fill="none"/>
     </svg>
   </div>
+  <div class="blood-drips">
+    <div class="drip" style="height:0;animation-delay:0s;animation-duration:2.5s"></div>
+    <div class="drip" style="height:0;animation-delay:0.4s;animation-duration:3s"></div>
+    <div class="drip" style="height:0;animation-delay:0.8s;animation-duration:2.8s"></div>
+    <div class="drip" style="height:0;animation-delay:1.2s;animation-duration:3.2s"></div>
+    <div class="drip" style="height:0;animation-delay:0.2s;animation-duration:2.6s"></div>
+  </div>
+  <p class="hero-scroll">▼ 아래로 스크롤하여 진실을 찾아라 ▼</p>
+</section>
 
-  <!-- Shadow Figure -->
-  <svg class="shadow-figure" width="200" height="200" viewBox="0 0 200 200">
-    <ellipse cx="100" cy="180" rx="60" ry="10" fill="#1a0a0a"/>
-    <ellipse cx="100" cy="90" rx="35" ry="50" fill="#0a0505"/>
-    <ellipse cx="100" cy="50" rx="25" ry="30" fill="#0a0505"/>
-    <line x1="65" y1="100" x2="30" y2="130" stroke="#0a0505" stroke-width="8" stroke-linecap="round"/>
-    <line x1="135" y1="100" x2="170" y2="130" stroke="#0a0505" stroke-width="8" stroke-linecap="round"/>
-  </svg>
+<!-- JOURNAL -->
+<section id="journal-section">
+  <div class="section-tag">Chapter I</div>
+  <div class="section-title">도나의 일지</div>
+  <div id="journal" style="padding:2rem;border-radius:6px;">
+    <div class="journal-pages" id="journal-pages">
 
-  <div class="content">
-    <h1>ANNABELLE</h1>
-    <p class="subtitle">그녀는 항상 지켜보고 있다</p>
-
-    <!-- Candles -->
-    <div class="candles">
-      <div class="candle">
-        <div class="flame"></div>
-        <div class="candle-body"></div>
-        <div class="wax-drip"></div>
+      <div class="page unlocked" id="page1" onclick="readPage(1)">
+        <div class="page-lock">🔒</div>
+        <div class="page-date">1968년 10월 3일 · 화요일</div>
+        <div class="page-text">
+          오늘 앤지에게 그 인형을 받았다. 빨간 드레스를 입은 낡은 누더기 인형. 이름은 에나벨이래.<br>
+          그냥 오래된 장난감이라고 생각했는데... 왜인지 <em>방 안에 들어오는 순간부터 무언가가 달라진 것 같다.</em>
+        </div>
+        <div class="page-choice">
+          <button class="choice-btn" onclick="makeChoice(1,'A',event)">▸ 인형을 쓰레기통에 버린다</button>
+          <button class="choice-btn" onclick="makeChoice(1,'B',event)">▸ 방에 그냥 둔다</button>
+        </div>
+        <div class="choice-result" id="choice1"></div>
       </div>
-      <div class="candle" style="transform: translateY(10px)">
-        <div class="flame" style="animation-delay: 0.2s"></div>
-        <div class="candle-body" style="height:35px"></div>
-        <div class="wax-drip"></div>
+
+      <div class="page" id="page2" onclick="readPage(2)">
+        <div class="page-lock">🔒</div>
+        <div class="page-date">1968년 10월 9일 · 월요일</div>
+        <div class="page-text">
+          이상한 일이 생겼다. 인형이 방 안에서 위치를 바꾼다. 어젯밤 창가에 뒀는데 아침에 보니 침대 옆에 있었다.<br>
+          룸메이트 루에게 물어봤지만 자기는 아무것도 건드리지 않았다고. <em>그렇다면... 누가 움직인 걸까.</em>
+        </div>
+        <div class="page-choice">
+          <button class="choice-btn" onclick="makeChoice(2,'A',event)">▸ 카메라를 설치해 감시한다</button>
+          <button class="choice-btn" onclick="makeChoice(2,'B',event)">▸ 인형에게 말을 걸어본다</button>
+        </div>
+        <div class="choice-result" id="choice2"></div>
       </div>
-      <div class="candle">
-        <div class="flame" style="animation-delay: 0.4s"></div>
-        <div class="candle-body"></div>
-        <div class="wax-drip"></div>
+
+      <div class="page" id="page3" onclick="readPage(3)">
+        <div class="page-lock">🔒</div>
+        <div class="page-date">1968년 10월 17일 · 수요일</div>
+        <div class="page-text">
+          오늘 아침 양피지 쪽지를 발견했다. 아무도 쓴 적 없는데 거기에 이렇게 적혀 있었다 :<br><br>
+          <em>"나를 도와줘. 나는 여기 있어."</em><br><br>
+          필체는... 아이의 것이었다. 손이 떨린다. 루도 처음 보는 쪽지라고 했다.
+        </div>
+        <div class="page-choice">
+          <button class="choice-btn" onclick="makeChoice(3,'A',event)">▸ 심령술사에게 연락한다</button>
+          <button class="choice-btn" onclick="makeChoice(3,'B',event)">▸ 무시하고 일상을 보낸다</button>
+        </div>
+        <div class="choice-result" id="choice3"></div>
       </div>
-    </div>
 
-    <!-- Annabelle Doll SVG -->
-    <div class="doll-container">
-      <svg class="doll-svg" width="220" height="280" viewBox="0 0 220 280">
-        <defs>
-          <radialGradient id="dollGlow" cx="50%" cy="30%" r="50%">
-            <stop offset="0%" stop-color="#f5dcc8"/>
-            <stop offset="100%" stop-color="#c4956a"/>
-          </radialGradient>
-        </defs>
-        <!-- Body -->
-        <rect x="75" y="155" width="70" height="110" rx="5" fill="#3a1a2a" stroke="#2a0a1a" stroke-width="1"/>
-        <!-- Arms -->
-        <rect x="65" y="160" width="20" height="80" rx="8" fill="#3a1a2a"/>
-        <rect x="135" y="160" width="20" height="80" rx="8" fill="#3a1a2a"/>
-        <!-- Shoulders -->
-        <rect x="55" y="155" width="12" height="5" fill="#2a0a1a" rx="2"/>
-        <rect x="153" y="155" width="12" height="5" fill="#2a0a1a" rx="2"/>
-        <!-- Legs -->
-        <rect x="80" y="240" width="25" height="40" rx="5" fill="#c4956a"/>
-        <rect x="115" y="240" width="25" height="40" rx="5" fill="#c4956a"/>
-        <!-- Shoes -->
-        <rect x="75" y="270" width="30" height="8" rx="2" fill="#4a2a1a"/>
-        <rect x="115" y="270" width="30" height="8" rx="2" fill="#4a2a1a"/>
-        <!-- Head -->
-        <ellipse cx="110" cy="95" rx="45" ry="55" fill="url(#dollGlow)"/>
-        <!-- Hair -->
-        <ellipse cx="110" cy="40" rx="42" ry="35" fill="#4a2a1a"/>
-        <path d="M68 30 Q75 10 90 20 Q100 5 110 15 Q120 2 132 18 Q148 8 152 28" fill="#3a1a0a"/>
-        <!-- Pigtails -->
-        <path d="M60 35 L55 55" stroke="#8b4a1a" stroke-width="6" stroke-linecap="round"/>
-        <path d="M160 35 L165 55" stroke="#8b4a1a" stroke-width="6" stroke-linecap="round"/>
-        <circle cx="65" cy="57" r="5" fill="#c4956a"/>
-        <circle cx="155" cy="57" r="5" fill="#c4956a"/>
-        <!-- Eyes (animated blink) -->
-        <g class="doll-eyes" id="dollEyes" style="transform-origin: 110px 95px">
-          <ellipse cx="92" cy="88" rx="9" ry="11" fill="#1a0a0a"/>
-          <ellipse cx="128" cy="88" rx="9" ry="11" fill="#1a0a0a"/>
-          <circle cx="89" cy="85" r="2.5" fill="white"/>
-          <circle cx="125" cy="85" r="2.5" fill="white"/>
-        </g>
-        <!-- Nose -->
-        <ellipse cx="110" cy="105" rx="6" ry="4" fill="#c4826a"/>
-        <!-- Mouth -->
-        <path d="M95 118 Q110 128 125 118" stroke="#8b0000" stroke-width="2" fill="none" stroke-linecap="round"/>
-        <!-- Collar -->
-        <rect x="100" y="145" width="20" height="15" rx="2" fill="#2a0a1a"/>
-        <path d="M90 155 Q110 170 130 155" fill="#3a1a2a"/>
-        <!-- Eerie markings -->
-        <line x1="85" y1="85" x2="88" y2="105" stroke="#8b0000" stroke-width="0.8" opacity="0.5"/>
-        <line x1="130" y1="88" x2="128" y2="108" stroke="#8b0000" stroke-width="0.8" opacity="0.5"/>
-      </svg>
-    </div>
+      <div class="page" id="page4" onclick="readPage(4)">
+        <div class="page-lock">🔒</div>
+        <div class="page-date">1968년 10월 28일 · 일요일</div>
+        <div class="page-text">
+          <em>그것이 들어왔다.</em> 루가 비명을 질렀다. 방 안에서 루의 가슴 위에 올라타 목을 조르는 검은 형체를 봤다고 한다.<br>
+          형체는 순식간에 사라졌고 에나벨은 그냥 구석에 앉아서... 웃고 있는 것 같았다.
+        </div>
+        <div class="page-choice">
+          <button class="choice-btn" onclick="makeChoice(4,'A',event)">▸ 신부님께 축복을 요청한다</button>
+          <button class="choice-btn" onclick="makeChoice(4,'B',event)">▸ 그 집에서 도망친다</button>
+        </div>
+        <div class="choice-result" id="choice4"></div>
+      </div>
 
-    <p class="blood-text">그녀는 밤마다 움직인다...</p>
-
-    <div class="diary-entry">
-      <em>1968년 11월 7일</em><br><br>
-      오늘 밤 또 들렸다. 복도에서 발소리가. 분명히 집에는 나 혼자인데.<br>
-      인형의 눈이 바뀌어 있었다. 어젯밤과 다른 방향을 보고 있었다.<br><br>
-      <span style="color:#8b0000; font-size:0.8rem;">— 페이지 여기서 찢어짐 —</span>
-    </div>
-
-    <button class="btn-horror" onclick="triggerScare()">
-      진실을 알고 싶다면...
-    </button>
-
-    <div class="footer-text">
-      <span class="red-drip">†</span> &nbsp; 인형은 결코 혼자가 아니다 &nbsp; <span class="red-drip">†</span>
     </div>
   </div>
+</section>
 
-  <script>
-    let scareTriggered = false;
+<!-- OUIJA BOARD -->
+<section id="ouija-section">
+  <div class="section-tag">Chapter II</div>
+  <div class="section-title">위자 보드</div>
+  <p style="color:var(--gold-dim);font-size:0.85rem;margin-bottom:2rem;font-family:'IM Fell English',serif;font-style:italic;">에나벨에게 질문을 입력하고 접촉을 시도하라. 하지만... 대답이 돌아올 때 후회하지 않길.</p>
+  <div id="ouija-board">
+    <div class="ouija-title-row">
+      <span class="ouija-sun">☀</span>
+      <div>
+        <div class="ouija-word">OUIJA</div>
+        <div style="font-size:0.6rem;color:#3a2a1a;letter-spacing:4px;text-align:center;">위자 · 혼령판</div>
+      </div>
+      <span class="ouija-moon">☽</span>
+    </div>
+    <div class="ouija-yesno">
+      <span class="ouija-yn">예</span>
+      <span class="ouija-yn">아니오</span>
+    </div>
+    <div class="ouija-letters" id="ouija-letters"></div>
+    <div class="ouija-numbers" id="ouija-nums"></div>
+    <div class="ouija-display" id="ouija-display">_ _ _ _ _ _</div>
+    <div class="ouija-input-row">
+      <input type="text" id="ouija-input" placeholder="에나벨에게 묻고 싶은 것을 입력..." maxlength="60">
+      <button id="ouija-ask" onclick="askOuija()">소환</button>
+    </div>
+    <div class="ouija-response" id="ouija-response"></div>
+  </div>
+</section>
 
-    function triggerScare() {
-      if (scareTriggered) return;
-      scareTriggered = true;
+<!-- EVIDENCE -->
+<section id="evidence">
+  <div class="section-tag">Chapter III</div>
+  <div class="section-title">증거 수집실</div>
+  <p style="color:var(--gold-dim);font-size:0.85rem;margin-bottom:2rem;font-family:'IM Fell English',serif;font-style:italic;">일지를 읽으면서 수집된 증거들이 나타난다. 클릭해서 자세히 살펴보라.</p>
+  <div class="evidence-grid" id="evidence-grid"></div>
+</section>
 
-      const overlay = document.getElementById('jumpOverlay');
-      overlay.style.display = 'flex';
+<!-- EVIDENCE DETAIL OVERLAY -->
+<div class="evidence-overlay" id="evidence-overlay" onclick="closeEvidence()">
+  <div class="evidence-detail" onclick="event.stopPropagation()">
+    <button class="evidence-close" onclick="closeEvidence()">✕</button>
+    <h3 id="ev-title"></h3>
+    <p id="ev-desc"></p>
+  </div>
+</div>
 
-      // Horror sound effect via Web Audio API
-      try {
-        const ctx = new (window.AudioContext || window.webkitAudioContext)();
-        const oscillator = ctx.createOscillator();
-        const gainNode = ctx.createGain();
-        oscillator.connect(gainNode);
-        gainNode.connect(ctx.destination);
-        oscillator.type = 'sawtooth';
-        oscillator.frequency.setValueAtTime(80, ctx.currentTime);
-        oscillator.frequency.exponentialRampToValueAtTime(600, ctx.currentTime + 0.3);
-        gainNode.gain.setValueAtTime(0.4, ctx.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 1.2);
-        oscillator.start();
-        oscillator.stop(ctx.currentTime + 1.2);
-      } catch(e) {}
+<!-- RITUAL -->
+<section id="ritual">
+  <div class="section-tag">Chapter IV</div>
+  <div class="section-title">봉인 의식</div>
+  <p style="color:var(--gold-dim);font-size:0.85rem;margin-bottom:2rem;font-family:'IM Fell English',serif;font-style:italic;text-align:center;">초에 불을 붙이고 주문을 완성하여 에나벨을 봉인하라.</p>
+  <div id="ritual-board">
+    <svg class="pentagram" width="120" height="120" viewBox="0 0 120 120">
+      <circle cx="60" cy="60" r="55" fill="none" stroke="rgba(139,0,0,0.3)" stroke-width="1"/>
+      <polygon points="60,8 112,82 14,36 106,36 8,82" fill="none" stroke="rgba(139,0,0,0.5)" stroke-width="1.5" id="pentagram-poly"/>
+    </svg>
+    <div class="candle-row" id="ritual-candles"></div>
+    <div class="ritual-text" id="ritual-text">어둠 속에서 다섯 개의 불꽃을 밝혀라...<br>그리고 주문을 완성하라.</div>
+    <div class="ritual-progress"><div class="ritual-fill" id="ritual-fill"></div></div>
+    <div id="ritual-chant" style="display:none;">
+      <p style="color:var(--gold-dim);font-size:0.8rem;letter-spacing:2px;margin-bottom:1rem;">다음 주문을 클릭하여 외워라 :</p>
+      <div id="chant-words" style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:1.5rem;"></div>
+    </div>
+    <button id="ritual-btn" onclick="startRitual()">의식을 시작한다</button>
+    <div id="ritual-result"></div>
+  </div>
+</section>
 
-      setTimeout(() => {
-        overlay.style.display = 'none';
-        scareTriggered = false;
-      }, 1800);
+<!-- SURVIVAL -->
+<section id="survival">
+  <div class="section-tag">Chapter V</div>
+  <div class="section-title">생존 판단 테스트</div>
+  <div id="survival-game">
+    <div class="surv-stats">
+      <div class="surv-stat"><div class="surv-stat-val" id="surv-score">0</div><div class="surv-stat-label">생존점수</div></div>
+      <div class="surv-stat"><div class="surv-stat-val" id="surv-q">1</div><div class="surv-stat-label">질문</div></div>
+      <div class="surv-stat"><div class="surv-stat-val" id="surv-life">❤❤❤</div><div class="surv-stat-label">생명력</div></div>
+    </div>
+    <div id="surv-content"></div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <p><span class="cross">†</span> &nbsp; 인형은 결코 혼자가 아니다 &nbsp; <span class="cross">†</span></p>
+  <p style="margin-top:0.5rem;">© 1968 ANNABELLE · 모든 악령 보존</p>
+</footer>
+
+<!-- NOTIFICATION -->
+<div id="notif"><p id="notif-text"></p></div>
+
+<script>
+/* ───────────── AUDIO ENGINE ───────────── */
+let AC=null, masterVol=0.7;
+function getAC(){
+  if(!AC) AC=new(window.AudioContext||window.webkitAudioContext)();
+  if(AC.state==='suspended') AC.resume();
+  return AC;
+}
+function playTone(type){
+  try{
+    const ac=getAC(), t=ac.currentTime;
+    const g=ac.createGain(); g.connect(ac.destination); g.gain.setValueAtTime(masterVol,t);
+    if(type==='creak'){
+      const o=ac.createOscillator(); o.connect(g); o.type='sawtooth';
+      o.frequency.setValueAtTime(180,t); o.frequency.exponentialRampToValueAtTime(55,t+1.2);
+      g.gain.setValueAtTime(masterVol*0.25,t); g.gain.exponentialRampToValueAtTime(0.001,t+1.2);
+      o.start(t); o.stop(t+1.2);
+    } else if(type==='sting'){
+      const o=ac.createOscillator(); o.connect(g); o.type='sawtooth';
+      o.frequency.setValueAtTime(250,t); o.frequency.exponentialRampToValueAtTime(900,t+0.08);
+      o.frequency.exponentialRampToValueAtTime(200,t+0.8);
+      g.gain.setValueAtTime(masterVol*0.45,t); g.gain.exponentialRampToValueAtTime(0.001,t+0.8);
+      o.start(t); o.stop(t+0.8);
+      const buf=ac.createBuffer(1,ac.sampleRate*0.8,ac.sampleRate);
+      const d=buf.getChannelData(0);
+      for(let i=0;i<d.length;i++) d[i]=(Math.random()*2-1)*0.6;
+      const s=ac.createBufferSource(); s.buffer=buf;
+      const f=ac.createBiquadFilter(); f.type='highpass'; f.frequency.value=1200;
+      const ng=ac.createGain(); s.connect(f); f.connect(ng); ng.connect(ac.destination);
+      ng.gain.setValueAtTime(masterVol*0.25,t); ng.gain.exponentialRampToValueAtTime(0.001,t+0.8);
+      s.start(t); s.stop(t+0.8);
+    } else if(type==='knock'){
+      for(let i=0;i<3;i++){
+        const kt=t+i*0.5+(i>1?0.3:0);
+        const o=ac.createOscillator(),kg=ac.createGain();
+        o.connect(kg);kg.connect(ac.destination);
+        o.type='sine';o.frequency.setValueAtTime(80,kt);o.frequency.exponentialRampToValueAtTime(35,kt+0.1);
+        kg.gain.setValueAtTime(masterVol*0.8,kt);kg.gain.exponentialRampToValueAtTime(0.001,kt+0.13);
+        o.start(kt);o.stop(kt+0.13);
+      }
+    } else if(type==='whisper'){
+      const buf=ac.createBuffer(1,ac.sampleRate*2,ac.sampleRate);
+      const d=buf.getChannelData(0);
+      for(let i=0;i<d.length;i++) d[i]=(Math.random()*2-1)*Math.sin(i/ac.sampleRate*Math.PI*4)*0.5;
+      const s=ac.createBufferSource(); s.buffer=buf;
+      const f=ac.createBiquadFilter();f.type='bandpass';f.frequency.value=700;f.Q.value=0.7;
+      s.connect(f);f.connect(g);
+      g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(masterVol*0.4,t+0.4);g.gain.linearRampToValueAtTime(0,t+2);
+      s.start(t);s.stop(t+2);
+    } else if(type==='chime'){
+      [440,554,659].forEach((freq,i)=>{
+        const o=ac.createOscillator(),cg=ac.createGain();
+        o.connect(cg);cg.connect(ac.destination);
+        o.type='triangle';o.frequency.value=freq;
+        const st=t+i*0.18;
+        cg.gain.setValueAtTime(0,st);cg.gain.linearRampToValueAtTime(masterVol*0.25,st+0.02);
+        cg.gain.exponentialRampToValueAtTime(0.001,st+1.2);
+        o.start(st);o.stop(st+1.2);
+      });
+    } else if(type==='heartbeat'){
+      for(let i=0;i<4;i++){
+        const b=(bt)=>{
+          const o=ac.createOscillator(),hg=ac.createGain();
+          o.connect(hg);hg.connect(ac.destination);
+          o.type='sine';o.frequency.setValueAtTime(55,bt);o.frequency.exponentialRampToValueAtTime(28,bt+0.12);
+          hg.gain.setValueAtTime(masterVol*0.7,bt);hg.gain.exponentialRampToValueAtTime(0.001,bt+0.15);
+          o.start(bt);o.stop(bt+0.15);
+        };
+        b(t+i*0.8); b(t+i*0.8+0.22);
+      }
+    } else if(type==='scream'){
+      const o=ac.createOscillator(); o.connect(g); o.type='sawtooth';
+      o.frequency.setValueAtTime(280,t);o.frequency.exponentialRampToValueAtTime(1100,t+0.08);
+      o.frequency.exponentialRampToValueAtTime(700,t+0.5);o.frequency.setValueAtTime(850,t+0.6);
+      o.frequency.exponentialRampToValueAtTime(180,t+1.5);
+      g.gain.setValueAtTime(masterVol*0.5,t);g.gain.exponentialRampToValueAtTime(0.001,t+1.5);
+      o.start(t);o.stop(t+1.5);
+    } else if(type==='ritual'){
+      const notes=[220,246,261,293,246,220,196];
+      notes.forEach((freq,i)=>{
+        const o=ac.createOscillator(),rg=ac.createGain();
+        o.connect(rg);rg.connect(ac.destination);
+        o.type='triangle';o.frequency.value=freq;
+        const st=t+i*0.35;
+        rg.gain.setValueAtTime(0,st);rg.gain.linearRampToValueAtTime(masterVol*0.3,st+0.05);
+        rg.gain.linearRampToValueAtTime(0,st+0.35);
+        o.start(st);o.stop(st+0.4);
+      });
     }
+  }catch(e){}
+}
 
-    // Auto jumpscare every 18–40 seconds
-    function scheduleAutoScare() {
-      const delay = 18000 + Math.random() * 22000;
-      setTimeout(() => {
-        if (!scareTriggered) triggerScare();
-        scheduleAutoScare();
-      }, delay);
+/* ───────────── JUMP SCARE ───────────── */
+let scareActive=false;
+function triggerScare(){
+  if(scareActive)return;
+  scareActive=true;
+  playTone('scream');
+  playTone('sting');
+  const el=document.getElementById('scare');
+  el.style.display='flex';
+  loseSanity(15);
+  setTimeout(()=>{ el.style.display='none'; scareActive=false; },1800);
+}
+el=document.getElementById('scare');
+el.addEventListener('click',()=>{ el.style.display='none'; scareActive=false; });
+
+// Auto scare
+function scheduleAuto(){ setTimeout(()=>{ if(!scareActive)triggerScare(); scheduleAuto(); }, 35000+Math.random()*30000); }
+scheduleAuto();
+
+/* ───────────── SANITY ───────────── */
+let sanity=100;
+function loseSanity(n){
+  sanity=Math.max(0,sanity-n);
+  document.getElementById('sanity-fill').style.width=sanity+'%';
+  if(sanity<30) document.getElementById('sanity-fill').style.background='#cc0000';
+}
+function gainSanity(n){
+  sanity=Math.min(100,sanity+n);
+  document.getElementById('sanity-fill').style.width=sanity+'%';
+}
+
+/* ───────────── NOTIFICATION ───────────── */
+let notifTimer;
+function showNotif(html){
+  const el=document.getElementById('notif');
+  document.getElementById('notif-text').innerHTML=html;
+  el.style.display='block';
+  clearTimeout(notifTimer);
+  notifTimer=setTimeout(()=>el.style.display='none',3500);
+}
+
+/* ───────────── LOADING ───────────── */
+window.addEventListener('load',()=>{
+  let pct=0;
+  const fill=document.getElementById('bar-fill');
+  const iv=setInterval(()=>{
+    pct+=Math.random()*12;
+    if(pct>=100){ pct=100; clearInterval(iv);
+      setTimeout(()=>{
+        const ld=document.getElementById('loading');
+        ld.style.opacity='0';
+        setTimeout(()=>ld.style.display='none',1000);
+        playTone('creak');
+      },400);
     }
-    scheduleAutoScare();
+    fill.style.width=pct+'%';
+  },120);
+  initOuija(); initEvidence(); initRitual(); initSurvival();
+});
 
-    // Doll eyes follow cursor
-    document.addEventListener('mousemove', (e) => {
-      const eyes = document.getElementById('dollEyes');
-      const doll = document.querySelector('.doll-svg');
-      const rect = doll.getBoundingClientRect();
-      const cx = rect.left + rect.width / 2;
-      const cy = rect.top + 200;
-      const dx = (e.clientX - cx) / window.innerWidth * 5;
-      const dy = (e.clientY - cy) / window.innerHeight * 4;
-      eyes.style.transform = `translate(${dx}px, ${dy}px)`;
-    });
+/* ───────────── MOUSE EYES ───────────── */
+document.addEventListener('mousemove',e=>{
+  const eyes=document.getElementById('heroEyes');
+  if(!eyes)return;
+  const r=document.getElementById('hero').getBoundingClientRect();
+  const dx=(e.clientX-r.left-r.width/2)/r.width*5;
+  const dy=(e.clientY-r.top-r.height*0.5)/r.height*4;
+  eyes.style.transform=`translate(${dx}px,${dy}px)`;
+});
 
-    // Close overlay on click
-    document.getElementById('jumpOverlay').addEventListener('click', () => {
-      document.getElementById('jumpOverlay').style.display = 'none';
-      scareTriggered = false;
+/* ───────────── JOURNAL ───────────── */
+let pagesRead=0;
+const pageUnlocks={1:[2],2:[3],3:[4]};
+const choiceResponses={
+  '1A':'나쁜 선택이었다. 다음날 아침 인형은 멀쩡히 방 안에 있었다. 버린 곳까지 어떻게 돌아온 걸까. 정신력이 흔들린다.',
+  '1B':'현명했다. 적어도 인형이 어디 있는지 알 수 있으니까. 모르는 것이 더 위험하다.',
+  '2A':'카메라에 찍힌 영상은 충격적이었다. 3시 7분, 인형의 눈동자가 움직였다. 뚜렷하게. 혼자서.',
+  '2B':'조심스럽게 말을 걸었다. 방 안의 온도가 급격히 내려갔다. 그리고 창문이 혼자 닫혔다.',
+  '3A':'신중한 결정이었다. 심령술사 로레인은 인형 안에 악령이 깃들었다고 말했다. 이건 단순한 인형이 아니다.',
+  '3B':'결국 더 나쁜 일이 일어났다. 무시한 대가는 항상 더 큰 법이다.',
+  '4A':'워렌 부부가 도착했다. 그들은 인형에서 강력한 악령의 기운을 느꼈고, 즉시 봉인 의식을 시작했다.',
+  '4B':'도망쳐봤자 소용없었다. 인형이 다음날 네 침대 위에 놓여 있었다. 그것은 따라왔다.'
+};
+function readPage(n){
+  const p=document.getElementById('page'+n);
+  if(!p||!p.classList.contains('unlocked'))return;
+  if(!p.classList.contains('read')){
+    p.classList.add('read');
+    pagesRead++;
+    unlockEvidence(n);
+    playTone('creak');
+    showNotif('<strong>일지 열람</strong> — '+n+'번째 페이지를 읽었습니다. 증거가 추가됩니다.');
+    loseSanity(5);
+  }
+}
+function makeChoice(page,opt,e){
+  e.stopPropagation();
+  const key=page+opt;
+  const res=document.getElementById('choice'+page);
+  res.textContent=choiceResponses[key];
+  res.style.display='block';
+  const btns=document.querySelectorAll('#page'+page+' .choice-btn');
+  btns.forEach(b=>b.disabled=true);
+  if(pageUnlocks[page]){
+    pageUnlocks[page].forEach(np=>{
+      const next=document.getElementById('page'+np);
+      if(next){ next.classList.add('unlocked'); playTone('knock'); }
     });
-  </script>
+  }
+  if(opt==='A') loseSanity(8); else gainSanity(3);
+  playTone('whisper');
+}
+
+/* ───────────── OUIJA ───────────── */
+const ouijaAnswers=[
+  {k:['이름','누구'],a:'에..나..벨',r:'차갑고 느린 목소리가 방을 가득 채운다.'},
+  {k:['어디'],a:'여기..있어',r:'바로 옆에서 숨소리가 들리는 것 같다.'},
+  {k:['왜','이유'],a:'도와줘',r:'어린아이의 울음소리가 들린다.'},
+  {k:['언제'],a:'항상..지금',r:'시계가 모두 멈춘다.'},
+  {k:['무서'],a:'나를봐',r:'인형의 눈이 빛을 발하는 것 같다.'},
+  {k:['원해','바라'],a:'자유..를',r:'창문이 저절로 열린다.'},
+  {k:['죽'],a:'아직아냐',r:'등골이 오싹해진다. 무슨 의미인가?'},
+  {k:['안녕','hello','hi'],a:'누..구냐',r:'인형판에서 이상한 기운이 느껴진다.'},
+];
+function initOuija(){
+  const letters='ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  const lc=document.getElementById('ouija-letters');
+  letters.split('').forEach(l=>{
+    const d=document.createElement('div');d.className='ouija-letter';d.textContent=l;lc.appendChild(d);
+  });
+  const nc=document.getElementById('ouija-nums');
+  '1234567890'.split('').forEach(n=>{
+    const d=document.createElement('div');d.className='ouija-letter';d.textContent=n;nc.appendChild(d);
+  });
+  document.getElementById('ouija-input').addEventListener('keydown',e=>{ if(e.key==='Enter') askOuija(); });
+}
+async function askOuija(){
+  const q=document.getElementById('ouija-input').value.trim();
+  if(!q)return;
+  playTone('whisper');
+  loseSanity(8);
+  document.getElementById('ouija-response').textContent='...접속 중...';
+  document.getElementById('ouija-display').textContent='? ? ? ? ? ?';
+  await delay(800);
+  let answer='모..르..겠..어', flavor='아무 대답도 없다. 그저 침묵만이 흐른다.';
+  for(const o of ouijaAnswers){
+    if(o.k.some(k=>q.toLowerCase().includes(k)||q.includes(k))){
+      answer=o.a; flavor=o.r; break;
+    }
+  }
+  document.getElementById('ouija-input').value='';
+  await animateOuija(answer);
+  document.getElementById('ouija-response').textContent=flavor;
+}
+async function animateOuija(text){
+  const disp=document.getElementById('ouija-display');
+  const letters=document.querySelectorAll('.ouija-letter');
+  disp.textContent='';
+  for(const ch of text){
+    if(ch===' '||ch==='.'){ disp.textContent+=ch; await delay(200); continue; }
+    const upper=ch.toUpperCase();
+    for(const l of letters){ if(l.textContent===upper){ l.classList.add('lit'); setTimeout(()=>l.classList.remove('lit'),500); break; } }
+    playTone('chime');
+    disp.textContent+=ch;
+    await delay(350+Math.random()*200);
+  }
+}
+function delay(ms){ return new Promise(r=>setTimeout(r,ms)); }
+
+/* ───────────── EVIDENCE ───────────── */
+const allEvidence=[
+  {id:'e1',icon:'📓',name:'오래된 일지',desc:'1968년 도나의 일지. 빛바랜 잉크로 쓰여진 첫 페이지. 인형을 처음 받은 날의 기록.',full:'일지 첫 페이지에는 이렇게 쓰여 있다 — "오늘 앤지에게 낡은 인형을 받았다. 이름은 에나벨. 뭔가 이상한 기운이 느껴지지만 그냥 오래된 장난감이겠지. 그런데 왜 이렇게 눈을 마주치기가 힘들까."'},
+  {id:'e2',icon:'📷',name:'감시 카메라 사진',desc:'새벽 3시 7분. 인형의 눈동자 이동이 포착된 흑백 사진.',full:'사진은 흔들려 있지만 분명하다. 인형의 눈이 카메라를 정면으로 바라보고 있다. 이 사진이 찍히기 전, 인형은 창문을 향해 있었다. 필름에 이상한 빛의 흔적도 보인다.'},
+  {id:'e3',icon:'📜',name:'정체불명 쪽지',desc:'아무도 쓰지 않은 쪽지. "나를 도와줘. 나는 여기 있어."',full:'양피지에 연필로 쓰인 이 글씨는 7~8세 아이의 필체로 보인다. 하지만 아파트에는 아이가 없었다. 필적 감정 결과, 이 글씨는 1940년대에 숨진 아이 에나벨 히긴스의 것과 일치한다고 한다.'},
+  {id:'e4',icon:'🕯️',name:'꺼진 촛불',desc:'봉인 의식 도중 이유 없이 꺼진 다섯 개의 촛불.',full:'워렌 부부의 기록에 따르면, 봉인 의식 도중 다섯 개의 촛불이 동시에 꺼졌다. 창문도 닫혀 있었고 바람도 없었다. 방 안 온도가 7도까지 내려갔으며 에나벨 인형의 입이 미세하게 움직이는 것이 목격되었다.'},
+];
+let foundEvidence=[];
+function initEvidence(){
+  const grid=document.getElementById('evidence-grid');
+  allEvidence.forEach(ev=>{
+    const card=document.createElement('div');
+    card.className='evidence-card';card.id='ev-'+ev.id;
+    card.innerHTML=`<div class="evidence-badge">발견</div><div class="evidence-icon">${ev.icon}</div><div class="evidence-name">${ev.name}</div><div class="evidence-desc">${ev.desc}</div>`;
+    card.onclick=()=>openEvidence(ev);
+    grid.appendChild(card);
+  });
+}
+function unlockEvidence(pageNum){
+  const map={1:'e1',2:'e2',3:'e3',4:'e4'};
+  const eid=map[pageNum];
+  if(!eid)return;
+  const card=document.getElementById('ev-'+eid);
+  if(card&&!foundEvidence.includes(eid)){
+    foundEvidence.push(eid);
+    card.classList.add('found');
+    showNotif('<strong>증거 발견!</strong> — '+allEvidence.find(e=>e.id===eid).name);
+  }
+}
+function openEvidence(ev){
+  playTone('creak');
+  document.getElementById('ev-title').textContent=ev.icon+' '+ev.name;
+  document.getElementById('ev-desc').textContent=ev.full;
+  document.getElementById('evidence-overlay').style.display='flex';
+}
+function closeEvidence(){ document.getElementById('evidence-overlay').style.display='none'; }
+
+/* ───────────── RITUAL ───────────── */
+let candlesLit=0, ritualStarted=false, chantProgress=0;
+const chantWords=['어둠이여','물러서라','에나벨을','봉인하노라','다시는','돌아오지마라'];
+function initRitual(){
+  const row=document.getElementById('ritual-candles');
+  for(let i=0;i<5;i++){
+    const c=document.createElement('div');
+    c.className='r-candle off';c.dataset.idx=i;
+    c.innerHTML='<div class="flame"></div><div class="cbody"></div>';
+    c.onclick=()=>lightCandle(c,i);
+    row.appendChild(c);
+  }
+  const cw=document.getElementById('chant-words');
+  chantWords.forEach((w,i)=>{
+    const btn=document.createElement('button');
+    btn.className='choice-btn';btn.textContent=w;btn.dataset.idx=i;
+    btn.style.opacity='0.3';btn.disabled=true;
+    btn.onclick=()=>chantWord(btn,i);
+    cw.appendChild(btn);
+  });
+}
+function lightCandle(c,i){
+  if(!ritualStarted||c.classList.contains('lit'))return;
+  playTone('chime');
+  c.classList.remove('off');c.classList.add('lit');
+  candlesLit++;
+  const fill=document.getElementById('ritual-fill');
+  fill.style.width=(candlesLit/5*50)+'%';
+  document.getElementById('ritual-text').textContent=`${candlesLit}/5 개의 불꽃이 밝혀졌다...${candlesLit===5?'이제 주문을 외워라!':''}`;
+  const poly=document.getElementById('pentagram-poly');
+  poly.style.stroke=`rgba(139,0,0,${0.2+candlesLit*0.16})`;
+  if(candlesLit===5){
+    document.getElementById('ritual-chant').style.display='block';
+    document.querySelectorAll('#chant-words button').forEach(b=>{ b.style.opacity='1'; b.disabled=false; });
+    playTone('ritual');
+  }
+}
+function startRitual(){
+  if(ritualStarted)return;
+  ritualStarted=true;
+  playTone('knock');
+  document.getElementById('ritual-btn').textContent='초에 불을 붙여라...';
+  document.getElementById('ritual-btn').disabled=true;
+  document.getElementById('ritual-text').textContent='각 촛불을 클릭하여 불을 밝혀라. 어둠이 물러날 것이다.';
+  document.querySelectorAll('.r-candle').forEach(c=>c.classList.remove('disabled'));
+  loseSanity(10);
+}
+function chantWord(btn,i){
+  if(i!==chantProgress)return;
+  btn.style.background='rgba(139,0,0,0.3)';btn.style.color='var(--blood)';btn.disabled=true;
+  playTone('ritual');
+  chantProgress++;
+  const fill=document.getElementById('ritual-fill');
+  fill.style.width=(50+chantProgress/6*50)+'%';
+  if(chantProgress===6){
+    setTimeout(()=>{
+      document.getElementById('ritual-result').innerHTML=
+        '<span style="color:var(--gold);font-family:\'Creepster\',cursive;font-size:1.5rem;letter-spacing:4px;">봉인 완료 †</span><br><br><span style="font-family:\'IM Fell English\',serif;font-size:0.9rem;color:var(--paper-text);">에나벨이 봉인되었다. 하지만 진정한 봉인은 영원하지 않다... 언젠가 다시 깨어날 것이다.</span>';
+      playTone('heartbeat');
+      gainSanity(20);
+      showNotif('<strong>의식 완료!</strong> — 에나벨이 봉인되었습니다. 잠시동안은.');
+    },500);
+  }
+}
+
+/* ───────────── SURVIVAL ───────────── */
+const scenarios=[
+  {
+    q:'새벽 3시, 방 안에서 발소리가 들린다. 불을 켜면 아무것도 없다. 어떻게 한다?',
+    choices:['불을 끄고 가만히 숨는다','소금으로 방 둘레에 원을 그린다','에나벨 인형에게 말을 건다','밖으로 뛰쳐나간다'],
+    correct:1,
+    feedback:{
+      correct:'정확한 판단! 소금은 악령을 막는 오래된 방법이다. 발소리가 멈췄다.',
+      wrong:['최악의 선택이다. 어둠 속에서 그것이 당신 곁에 다가왔다. 정신력 -20.','인형에게 말을 걸자 방 온도가 급격히 내려갔다. 잘못된 접근이었다.','밖으로 나갔지만 그것이 따라왔다. 어디를 가든 소용없다.']
+    }
+  },
+  {
+    q:'에나벨 인형이 침대 위에 올라와 있는 것을 발견했다. 분명히 선반에 뒀는데.',
+    choices:['인형을 즉시 상자에 넣고 테이프로 봉인한다','인형을 무시하고 잠을 청한다','인형의 눈에 천을 씌운다','사진을 찍어 증거로 남긴다'],
+    correct:0,
+    feedback:{
+      correct:'현명한 행동! 인형의 이동을 봉인으로 막았다. 그날 밤은 평화로웠다.',
+      wrong:['무시하는 것은 더 위험하다. 아침에 일어났을 때 인형이 당신 얼굴 앞에 있었다.','천은 아무 소용이 없었다. 천이 저절로 벗겨졌다.','사진을 찍는 순간 카메라 셔터가 고장났다. 그리고 인형의 위치가 또 바뀌었다.']
+    }
+  },
+  {
+    q:'심령술사가 에나벨 안에 악령이 있다고 했다. 당신은 믿지 않는다. 어떻게 한다?',
+    choices:['그래도 전문가 말이니 일단 따른다','혼자서 엑소시즘을 시도한다','인형을 강에 버린다','아무것도 하지 않는다'],
+    correct:0,
+    feedback:{
+      correct:'현명하다! 불확실한 상황에서는 전문가를 믿는 것이 최선이다.',
+      wrong:['혼자서 엑소시즘은 절대 금물이다. 준비 없이 악령과 마주쳤다. 생존 불가.','강에 버렸지만 3일 후 인형이 돌아왔다. 물도 막지 못했다.','아무것도 하지 않은 결과: 다음 날 아침 루가 의식을 잃었다.']
+    }
+  },
+  {
+    q:'밤 12시, 일기에서 에나벨이 "자유를 원한다"는 것을 알았다. 어떻게 반응할까?',
+    choices:['워렌 부부에게 즉시 연락한다','인형에게 "자유를 주겠다"고 약속한다','인형을 태운다','일기를 무시한다'],
+    correct:0,
+    feedback:{
+      correct:'최선의 선택! 에드워드 워렌과 로레인 워렌이 도착해 에나벨을 박물관에 격리했다.',
+      wrong:['"자유를 주겠다"고 약속하는 순간 그것이 활성화됐다. 최악의 실수였다.','악령은 불로 죽지 않는다. 인형이 타는 동안 웃음소리가 들렸다.','일기를 무시한 당신은 결국 에나벨의 도구가 되었다.']
+    }
+  },
+  {
+    q:'에나벨이 봉인된 박물관에서 규칙을 어기고 인형에게 손을 댔다. 어떻게 한다?',
+    choices:['즉시 손을 떼고 박물관에서 뛰쳐나간다','인형에게 도전한다','기도를 시작한다','아무 일 없는 척 무시한다'],
+    correct:2,
+    feedback:{
+      correct:'기도가 당신을 보호했다. 신앙은 언제나 강력한 방패가 된다.',
+      wrong:['뛰쳐나갔지만 주차장에서 사고가 났다. 에나벨은 이미 당신을 따라왔다.','도전? 악령에게 도전하는 것은 자살 행위다. 즉각적인 반격이 왔다.','무시한 대가: 그날 밤 집에서 심각한 사고가 연속으로 발생했다.']
+    }
+  }
+];
+let survQ=0, survScore=0, survLives=3;
+function initSurvival(){ renderSurv(); }
+function renderSurv(){
+  const c=document.getElementById('surv-content');
+  if(survQ>=scenarios.length){ showSurvEnd(c); return; }
+  const s=scenarios[survQ];
+  document.getElementById('surv-q').textContent=survQ+1;
+  document.getElementById('surv-score').textContent=survScore;
+  document.getElementById('surv-life').textContent='❤'.repeat(survLives)+'🖤'.repeat(3-survLives);
+  c.innerHTML=`<div class="surv-scenario">${s.q}</div><div class="surv-choices">${s.choices.map((ch,i)=>`<button class="surv-choice" onclick="answerSurv(${i})">${String.fromCharCode(65+i)}. ${ch}</button>`).join('')}</div><div class="surv-feedback" id="sfb"></div><button class="surv-next" id="snext" onclick="nextSurv()">다음 상황 →</button>`;
+}
+function answerSurv(idx){
+  const s=scenarios[survQ];
+  document.querySelectorAll('.surv-choice').forEach(b=>b.disabled=true);
+  const fb=document.getElementById('sfb');
+  fb.style.display='block';
+  if(idx===s.correct){
+    document.querySelectorAll('.surv-choice')[idx].classList.add('correct');
+    fb.className='surv-feedback correct';
+    fb.textContent='✓ '+s.feedback.correct;
+    survScore+=20; gainSanity(5); playTone('chime');
+  } else {
+    document.querySelectorAll('.surv-choice')[idx].classList.add('wrong');
+    document.querySelectorAll('.surv-choice')[s.correct].classList.add('correct');
+    fb.className='surv-feedback wrong';
+    fb.textContent='✗ '+s.feedback.wrong[idx<s.correct?idx:idx-1];
+    survLives=Math.max(0,survLives-1);
+    loseSanity(12); playTone('knock');
+    if(survLives===0){ setTimeout(()=>{ triggerScare(); renderSurv(); },1200); return; }
+  }
+  document.getElementById('surv-q').textContent=survQ+1;
+  document.getElementById('surv-score').textContent=survScore;
+  document.getElementById('surv-life').textContent='❤'.repeat(survLives)+'🖤'.repeat(3-survLives);
+  document.getElementById('snext').style.display='block';
+}
+function nextSurv(){ survQ++; renderSurv(); }
+function showSurvEnd(c){
+  let msg='',grade='';
+  if(survScore>=80){ msg='당신은 에나벨과 마주쳤고 살아남았다. 하지만 그 눈빛은 영원히 잊을 수 없을 것이다.'; grade='생존자'; }
+  else if(survScore>=40){ msg='가까스로 살아남았다. 몇 번의 실수가 있었지만 결국 에나벨을 피해 도망쳤다.'; grade='간신히 생존'; }
+  else { msg='에나벨이 당신을 데려갔다. 이제 당신도 그녀의 컬렉션 중 하나가 되었다.'; grade='봉인됨'; triggerScare(); }
+  c.innerHTML=`<div class="surv-end"><h3>${grade}</h3><p>${msg}</p><p style="font-family:'Creepster',cursive;font-size:1.5rem;color:var(--blood);">점수: ${survScore} / 100</p><br><button class="surv-restart" onclick="restartSurv()">다시 도전</button></div>`;
+}
+function restartSurv(){ survQ=0; survScore=0; survLives=3; renderSurv(); }
+
+/* ───────────── SCROLL EFFECTS ───────────── */
+const observer=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      const id=e.target.id||e.target.closest('section')?.id;
+      if(id==='ouija-section') playTone('whisper');
+      if(id==='ritual') playTone('creak');
+    }
+  });
+},{threshold:0.3});
+document.querySelectorAll('section').forEach(s=>observer.observe(s));
+</script>
 </body>
 </html>
